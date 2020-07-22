@@ -6,6 +6,10 @@ instana({
         enabled: true
     }
 });
+MONGO_URL
+process.env["MONGO_URL"] = '172.19.0.5';
+process.env["CATALOGUE_SERVER_PORT"] = '8081'; // 8080 is occupied by action image.
+process.env['NODE_TLS_REJECT_UNAUTHORIZED']=0
 
 const mongoClient = require('mongodb').MongoClient;
 const mongoObjectID = require('mongodb').ObjectID;
@@ -172,3 +176,50 @@ app.listen(port, () => {
     logger.info('Started on port', port);
 });
 
+exports.main = test
+
+function test(params={}){
+    const url = params.__ow_path || '/health';
+    const method = params.__ow_method || 'get';
+    const headers = params.__ow_headers || {
+      'Connection': 'keep-alive',
+      'Accept': 'application/json, text/plain, */*',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
+      'Content-Type': 'application/json;charset=UTF-8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,fr;q=0.6',
+      'Cookie': 'sharelatex.sid=s%3AVVk1PqK4VnJLoGBMSFYwsoLT4W0yulti.JR4Yj544rl6yg%2BaOoLzky5ke8lS51jrYiYnpLN4MzU4'
+    };
+    
+    const { promisify } = require('util')
+    const request = require("request")
+    const reqPromise = promisify(request[method]);
+    return (async () => {
+        let result;
+        let opt={}
+        opt['headers'] = headers;
+        opt['url'] = `http://localhost:${port}${url}`;
+        let str = params.__ow_body || '';
+        if(str !== "" && Buffer.from(str, 'base64').toString('base64') === str){
+          // base64
+          params.__ow_body = Buffer.from(str, 'base64').toString('ascii');
+        }
+        opt['body'] = params.__ow_body;
+        if(params.__ow_query !== ""){
+          const qs = '?' + params.__ow_query;
+          opt['url'] = opt['url'] + qs;
+        }
+        result = await reqPromise(opt);
+        var response = JSON.parse(JSON.stringify(result));
+        delete response.request
+        return response
+      })();
+}
+
+if (!module.parent) {
+    (async () => {
+      let result = await test();
+      console.log(result);
+    })();
+}
+  
