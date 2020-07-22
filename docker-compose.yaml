@@ -4,20 +4,24 @@ services:
     build:
       context: mongo
     image: ${REPO}/rs-mongodb:${TAG}
+    container_name: ${PREFIX}mongodb
     networks:
       - robot-shop
   redis:
     image: redis:4.0.6
+    container_name: ${PREFIX}redis
     networks:
       - robot-shop
   rabbitmq:
     image: rabbitmq:3.7-management-alpine
+    container_name: ${PREFIX}rabbitmq
     networks:
       - robot-shop
   catalogue:
     build:
       context: catalogue
     image: ${REPO}/rs-catalogue:${TAG}
+    container_name: ${PREFIX}catalogue
     depends_on:
       - mongodb
     networks:
@@ -26,6 +30,7 @@ services:
     build:
       context: user
     image: ${REPO}/rs-user:${TAG}
+    container_name: ${PREFIX}user
     depends_on:
       - mongodb
       - redis
@@ -35,6 +40,7 @@ services:
     build:
       context: cart
     image: ${REPO}/rs-cart:${TAG}
+    container_name: ${PREFIX}cart
     depends_on:
       - redis
     networks:
@@ -43,6 +49,7 @@ services:
     build:
       context: mysql
     image: ${REPO}/rs-mysql-db:${TAG}
+    container_name: ${PREFIX}mysql
     cap_add:
       - NET_ADMIN
     networks:
@@ -51,6 +58,7 @@ services:
     build:
       context: shipping
     image: ${REPO}/rs-shipping:${TAG}
+    container_name: ${PREFIX}shipping
     depends_on:
       - mysql
     networks:
@@ -59,6 +67,7 @@ services:
     build:
       context: ratings
     image: ${REPO}/rs-ratings:${TAG}
+    container_name: ${PREFIX}ratings
     networks:
       - robot-shop
     depends_on:
@@ -67,6 +76,7 @@ services:
     build:
       context: payment
     image: ${REPO}/rs-payment:${TAG}
+    container_name: ${PREFIX}payment
     depends_on:
       - rabbitmq
     networks:
@@ -78,6 +88,7 @@ services:
     build:
       context: dispatch
     image: ${REPO}/rs-dispatch:${TAG}
+    container_name: ${PREFIX}dispatch
     depends_on:
       - rabbitmq
     networks:
@@ -86,6 +97,7 @@ services:
     build:
       context: web
     image: ${REPO}/rs-web:${TAG}
+    container_name: ${PREFIX}web
     depends_on:
       - catalogue
       - user
