@@ -5,6 +5,8 @@ services:
       context: mongo
     image: ${REPO}/rs-mongodb:${TAG}
     container_name: ${PREFIX}mongodb
+    ports:
+      - "27019:27017"
     networks:
       - robot-shop
   redis:
