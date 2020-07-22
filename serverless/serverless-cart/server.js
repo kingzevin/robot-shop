@@ -9,6 +9,7 @@ instana({
 
 process.env["REDIS_HOST"] = '172.19.0.2';
 process.env["CATALOGUE_HOST"] = '172.19.0.10';
+process.env["CART_SERVER_PORT"] = '8081'; // 8080 is occupied by action image.
 process.env['NODE_TLS_REJECT_UNAUTHORIZED']=0
 
 const redis = require('redis');
@@ -434,3 +435,11 @@ function test(params={}){
         return response
       })();
 }
+
+if (!module.parent) {
+    (async () => {
+      let result = await test();
+      console.log(result);
+    })();
+}
+  
