@@ -1,6 +1,6 @@
 FROM nginx:1.16
 
-EXPOSE 8080
+EXPOSE 8080 8079
 
 ENV CATALOGUE_HOST=catalogue \
     USER_HOST=user \

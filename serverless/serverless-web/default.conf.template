@@ -83,3 +83,74 @@ server {
     }
 }
 
+server {
+    listen       8079 default ssl;
+    server_name  localhost;
+
+    proxy_http_version 1.1;
+
+    #charset koi8-r;
+    access_log /var/log/nginx/https.access.log ;
+    error_log /var/log/nginx/https.error.log ;
+    #rewrite_log on;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        ssi    on;
+    }
+
+    location /images/ {
+        expires 5s;
+        root   /usr/share/nginx/html;
+        try_files $uri /images/placeholder.jpg;
+    }
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    location /api/catalogue/ {
+        proxy_pass https://172.17.0.1/api/v1/web/guest/robotshop/${CATALOGUE_HOST}/;
+    }
+
+    location /api/user/ {
+        proxy_pass https://172.17.0.1/api/v1/web/guest/robotshop/${USER_HOST}/;
+    }
+
+    location /api/cart/ {
+        proxy_pass https://172.17.0.1/api/v1/web/guest/robotshop/${CART_HOST}/;
+    }
+
+    location /api/shipping/ {
+        proxy_pass https://172.17.0.1/api/v1/web/guest/robotshop/${SHIPPING_HOST}/;
+    }
+
+    location /api/payment/ {
+        proxy_pass https://172.17.0.1/api/v1/web/guest/robotshop/${PAYMENT_HOST}/;
+    }
+
+    location /api/ratings/ {
+        proxy_pass https://172.17.0.1/api/v1/web/guest/robotshop/${RATINGS_HOST}/;
+    }
+
+    location /nginx_status {
+        stub_status on;
+        access_log off;
+    }
+
+    ssl_session_cache    shared:SSL:1m;
+    ssl_session_timeout  10m;
+    ssl_certificate      /etc/nginx/openwhisk-server-cert.pem;
+    ssl_certificate_key  /etc/nginx/openwhisk-server-key.pem;
+    ssl_client_certificate /etc/nginx/openwhisk-client-ca-cert.pem;
+    ssl_verify_client off;
+    ssl_protocols        TLSv1.2;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256;
+    ssl_prefer_server_ciphers on;
+    proxy_ssl_session_reuse on;
+}
+
