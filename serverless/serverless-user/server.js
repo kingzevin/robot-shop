@@ -7,8 +7,9 @@ instana({
     }
 });
 
-process.env["REDIS_HOST"] = '172.19.0.2';
-process.env["MONGO_URL"] = 'mongodb://172.19.0.1:27019/users';
+process.env["REDIS_HOST"] = '172.17.0.1';
+process.env["REDIS_PORT"] = '6381';
+process.env["MONGO_URL"] = 'mongodb://172.17.0.1:27019/users';
 process.env["USER_SERVER_PORT"] = '8081'; // 8080 is occupied by action image.
 process.env['NODE_TLS_REJECT_UNAUTHORIZED']=0
 
@@ -247,7 +248,8 @@ app.get('/history/:id', (req, res) => {
 
 // connect to Redis
 var redisClient = redis.createClient({
-    host: process.env.REDIS_HOST || 'redis'
+    host: process.env.REDIS_HOST || 'redis',
+    port: process.env.REDIS_PORT || '6379'
 });
 
 redisClient.on('error', (e) => {

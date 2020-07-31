@@ -1,15 +1,19 @@
 version: '3'
 services:
   mongodb:
-    build:
-      context: mongo
+    # build:
+    #   context: serverless-mongo
     image: ${REPO}/rs-mongodb:${TAG}
     container_name: ${PREFIX}mongodb
+    ports:
+      - "27019:27017"
     networks:
       - robot-shop
   redis:
     image: redis:4.0.6
     container_name: ${PREFIX}redis
+    ports:
+      - "6381:6379"
     networks:
       - robot-shop
   rabbitmq:
@@ -18,8 +22,8 @@ services:
     networks:
       - robot-shop
   catalogue:
-    build:
-      context: catalogue
+    # build:
+    #   context: serverless-catalogue
     image: ${REPO}/rs-catalogue:${TAG}
     container_name: ${PREFIX}catalogue
     depends_on:
@@ -27,8 +31,8 @@ services:
     networks:
       - robot-shop
   user:
-    build:
-      context: user
+    # build:
+    #   context: serverless-user
     image: ${REPO}/rs-user:${TAG}
     container_name: ${PREFIX}user
     depends_on:
@@ -37,8 +41,8 @@ services:
     networks:
       - robot-shop
   cart:
-    build:
-      context: cart
+    # build:
+    #   context: serverless-cart
     image: ${REPO}/rs-cart:${TAG}
     container_name: ${PREFIX}cart
     depends_on:
@@ -46,17 +50,19 @@ services:
     networks:
       - robot-shop
   mysql:
-    build:
-      context: mysql
+    # build:
+    #   context: serverless-mysql
     image: ${REPO}/rs-mysql-db:${TAG}
     container_name: ${PREFIX}mysql
+    ports:
+      - "3306:3306"
     cap_add:
       - NET_ADMIN
     networks:
       - robot-shop
   shipping:
-    build:
-      context: shipping
+    # build:
+    #   context: serverless-shipping
     image: ${REPO}/rs-shipping:${TAG}
     container_name: ${PREFIX}shipping
     depends_on:
@@ -64,8 +70,8 @@ services:
     networks:
       - robot-shop
   ratings:
-    build:
-      context: ratings
+    # build:
+    #   context: serverless-ratings
     image: ${REPO}/rs-ratings:${TAG}
     container_name: ${PREFIX}ratings
     networks:
@@ -73,8 +79,8 @@ services:
     depends_on:
       - mysql
   payment:
-    build:
-      context: payment
+    # build:
+    #   context: serverless-payment
     image: ${REPO}/rs-payment:${TAG}
     container_name: ${PREFIX}payment
     depends_on:
@@ -85,8 +91,8 @@ services:
     #environment:
       #PAYMENT_GATEWAY: "https://www.worldpay.com"
   dispatch:
-    build:
-      context: dispatch
+    # build:
+    #   context: serverless-dispatch
     image: ${REPO}/rs-dispatch:${TAG}
     container_name: ${PREFIX}dispatch
     depends_on:
@@ -94,8 +100,8 @@ services:
     networks:
       - robot-shop
   web:
-    build:
-      context: web
+    # build:
+    #   context: serverless-web
     image: ${REPO}/rs-web:${TAG}
     container_name: ${PREFIX}web
     depends_on:
@@ -105,6 +111,7 @@ services:
       - payment
     ports:
       - "8080:8080"
+      - "8079:8079"
     networks:
       - robot-shop
     # Uncomment to enable Instana EUM

@@ -7,8 +7,8 @@ instana({
     }
 });
 
-process.env["REDIS_HOST"] = '172.19.0.2';
-process.env["CATALOGUE_HOST"] = '172.19.0.10';
+process.env["REDIS_HOST"] = '172.17.0.1';
+process.env["REDIS_PORT"] = '6381';
 process.env["CART_SERVER_PORT"] = '8081'; // 8080 is occupied by action image.
 process.env['NODE_TLS_REJECT_UNAUTHORIZED']=0
 
@@ -32,7 +32,7 @@ const counter = new promClient.Counter({
 var redisConnected = false;
 
 var redisHost = process.env.REDIS_HOST || 'redis'
-var catalogueHost = process.env.CATALOGUE_HOST || 'catalogue'
+var redisPort = process.env.REDIS_PORT || '6379'
 
 const logger = pino({
     level: 'info',
@@ -350,7 +350,8 @@ function calcTax(total) {
 
 function getProduct(sku) {
     return new Promise((resolve, reject) => {
-        request('http://' + catalogueHost + ':8080/product/' + sku, (err, res, body) => {
+        request('https://172.17.0.1/api/v1/web/guest/robotshop/catalogue/product/' + sku, (err, res, body) => {
+        // request('http://' + catalogueHost + ':8080/product/' + sku, (err, res, body) => {
             if(err) {
                 reject(err);
             } else if(res.statusCode != 200) {
@@ -379,7 +380,8 @@ function saveCart(id, cart) {
 
 // connect to Redis
 var redisClient = redis.createClient({
-    host: redisHost
+    host: redisHost,
+    port: redisPort
 });
 
 redisClient.on('error', (e) => {

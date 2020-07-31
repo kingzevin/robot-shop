@@ -7,7 +7,7 @@ instana({
     }
 });
 
-process.env["MONGO_URL"] = 'mongodb://172.19.0.1:27019/catalogue';
+process.env["MONGO_URL"] = 'mongodb://172.17.0.1:27019/catalogue';
 process.env["CATALOGUE_SERVER_PORT"] = '8081'; // 8080 is occupied by action image.
 process.env['NODE_TLS_REJECT_UNAUTHORIZED']=0
 
