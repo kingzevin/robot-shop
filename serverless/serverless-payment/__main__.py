@@ -8,6 +8,7 @@ import json
 import requests
 import traceback
 import threading
+import base64
 import opentracing as ot
 import opentracing.ext.tags as tags
 from flask import Flask
@@ -26,8 +27,8 @@ app.logger.setLevel(logging.INFO)
 CART = os.getenv('CART_HOST', 'cart')
 USER = os.getenv('USER_HOST', 'user')
 CART_URL = 'http://' + CART + ':8080'
-USER_URL = 'http://' + USER + ':8080'
 CART_URL = 'https://172.17.0.1/api/v1/web/guest/robotshop/cart'
+USER_URL = 'http://' + USER + ':8080'
 USER_URL = 'https://172.17.0.1/api/v1/web/guest/robotshop/user'
 os.environ['SHOP_PAYMENT_PORT'] = '8082'
 PAYMENT_GATEWAY = os.getenv('PAYMENT_GATEWAY', 'https://paypal.com/')
@@ -177,6 +178,9 @@ def main(params):
             url += '?' + params.get('__ow_query')
         headers = params.get('__ow_headers')
         body = params.get('__ow_body')
+        # check base64
+        if body and base64.b64encode(base64.b64decode(body)).decode() == body:
+            body = base64.b64decode(body).decode()
         if params.get('__ow_method') == 'get':
             req = requests.get(url, headers = headers) 
         elif params.get('__ow_method') == 'post':
@@ -185,7 +189,6 @@ def main(params):
             req = requests.delete(url, headers = headers) 
         elif params.get('__ow_method') == 'put':
             req = requests.put(url, headers = headers, data = body) 
-        return {'body': req.text, 'heaers': str(req.headers)}
-        # return {'body': req.text, heaers: req.headers}
+        return {'body': req.text, 'headers': str(req.headers)}
     else:
         return {'body': 'error! no method'}
