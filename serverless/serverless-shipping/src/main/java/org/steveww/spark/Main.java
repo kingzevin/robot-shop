@@ -17,6 +17,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.DbUtils;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -34,6 +35,16 @@ public class Main {
     private static String JDBC_URL = null;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
     private static ComboPooledDataSource cpds = null;
+
+    public static JsonObject main(JsonObject args) {
+        System.out.println("2");
+        String name = "stranger";
+        if (args.has("name"))
+            name = args.getAsJsonPrimitive("name").getAsString();
+        JsonObject response = new JsonObject();
+        response.addProperty("greeting", "Hello " + name + "!");
+        return response;
+    }
 
     public static void main(String[] args) {
         // Get ENV configuration values
