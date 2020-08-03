@@ -60,9 +60,7 @@ import java.util.List;
 import java.util.Map;
 // import java.util.Base64;
 
-// todo: 
-//      ssl
-//      body base64
+
 public class Main {
     // zevin
     private static int port = 8081;
@@ -77,7 +75,7 @@ public class Main {
         Main.main(s);
 
         JsonObject result = new JsonObject();
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpClient httpClient = HttpClients.createDefault();
         CloseableHttpResponse response;
         // URI uri = new URIBuilder();
         if(args.has("__ow_method")){
@@ -93,12 +91,13 @@ public class Main {
                     body = new String(Base64.decodeBase64(body));
                 }
             }
+            Spark.awaitInitialization(); // zevin: we have to wait for the initialization to end
             switch (args.get("__ow_method").getAsString()){
                 case "get":
                 {
                     HttpGet request = new HttpGet(url);
                     setHeaders(request, headers);
-                    response = httpclient.execute(request);
+                    response = httpClient.execute(request);
                     break;
                 }
                 case "post":
@@ -106,7 +105,7 @@ public class Main {
                     HttpPost request = new HttpPost(url);
                     setHeaders(request, headers);
                     request.setEntity(new StringEntity(body));
-                    response = httpclient.execute(request);
+                    response = httpClient.execute(request);
                     System.out.println(response);
                     break;
                 }
@@ -116,6 +115,11 @@ public class Main {
             }
             setHeaders(result, response);
             result.addProperty("body", EntityUtils.toString(response.getEntity(), Charsets.UTF_8));
+            // response.getStatusLine().getStatusCode();
+
+            response.close();
+            httpClient.close();
+            Spark.stop(); // zevin: a bug in openwhisk: the thread is not cleared and isolated
             return result;
         }
         else{
