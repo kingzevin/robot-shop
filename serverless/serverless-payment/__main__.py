@@ -2,6 +2,7 @@ import instana
 import os
 import sys
 import time
+import ast
 import logging
 import uuid
 import json
@@ -20,7 +21,6 @@ from flask import jsonify
 import prometheus_client
 from prometheus_client import Counter, Histogram
 
-print('name: ')
 app = Flask('__main__')
 app.logger.setLevel(logging.INFO)
 
@@ -157,7 +157,6 @@ fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 app.logger.info('Payment gateway {}'.format(PAYMENT_GATEWAY))
 port = int(os.getenv("SHOP_PAYMENT_PORT", "8080"))
 app.logger.info('Starting on port {}'.format(port))
-print('here')
 # app.run(host='0.0.0.0', port=port)
 
 class myThread(threading.Thread):
@@ -189,6 +188,8 @@ def main(params):
             req = requests.delete(url, headers = headers) 
         elif params.get('__ow_method') == 'put':
             req = requests.put(url, headers = headers, data = body) 
-        return {'body': req.text, 'headers': str(req.headers)}
+
+        # app.logger.info('body: ' + '{{{' + req.text + '}}}')
+        return {'body': req.text, 'headers': ast.literal_eval(str(req.headers)), 'statusCode': req.status_code}
     else:
         return {'body': 'error! no method'}
