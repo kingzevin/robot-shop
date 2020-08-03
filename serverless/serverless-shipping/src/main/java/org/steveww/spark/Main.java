@@ -115,7 +115,7 @@ public class Main {
             }
             setHeaders(result, response);
             result.addProperty("body", EntityUtils.toString(response.getEntity(), Charsets.UTF_8));
-            // response.getStatusLine().getStatusCode();
+            result.addProperty("statusCode", response.getStatusLine().getStatusCode());
 
             response.close();
             httpClient.close();
