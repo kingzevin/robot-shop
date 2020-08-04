@@ -58,7 +58,6 @@ import java.sql.Types;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-// import java.util.Base64;
 
 
 public class Main {
@@ -69,10 +68,18 @@ public class Main {
     private static String JDBC_URL = null;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
     private static ComboPooledDataSource cpds = null;
+    private static boolean initFlag = false;
+
+//    synchronized
 
     public static JsonObject main(JsonObject args) throws Exception{
-        String[] s = {""};
-        Main.main(s);
+        if(!initFlag){
+            String[] s = {""};
+            Main.main(s);
+            Spark.awaitInitialization(); // zevin: we have to wait for the initialization to end
+            initFlag = true;
+        }
+
 
         JsonObject result = new JsonObject();
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -91,7 +98,7 @@ public class Main {
                     body = new String(Base64.decodeBase64(body));
                 }
             }
-            Spark.awaitInitialization(); // zevin: we have to wait for the initialization to end
+
             switch (args.get("__ow_method").getAsString()){
                 case "get":
                 {
@@ -119,7 +126,7 @@ public class Main {
 
             response.close();
             httpClient.close();
-            Spark.stop(); // zevin: a bug in openwhisk: the thread is not cleared and isolated
+//            Spark.stop(); // zevin: a bug in openwhisk: the thread is not cleared and isolated
             return result;
         }
         else{
@@ -141,7 +148,6 @@ public class Main {
             System.out.println("ParseError!");
             e.printStackTrace();
         }
-
     }
 
     private static void setHeaders(JsonObject result, CloseableHttpResponse response){
