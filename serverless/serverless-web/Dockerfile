@@ -14,4 +14,6 @@ ENTRYPOINT ["/root/entrypoint.sh"]
 
 COPY default.conf.template /etc/nginx/conf.d/default.conf.template
 COPY static /usr/share/nginx/html
-
+COPY openwhisk-server-cert.pem /etc/nginx/openwhisk-server-cert.pem
+COPY openwhisk-server-key.pem /etc/nginx/openwhisk-server-key.pem
+COPY openwhisk-client-ca-cert.pem /etc/nginx/openwhisk-client-ca-cert.pem
