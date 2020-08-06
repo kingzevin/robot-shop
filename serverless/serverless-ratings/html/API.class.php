@@ -1,8 +1,8 @@
 <?php
 // load composer installed files
 require_once(__DIR__.'/vendor/autoload.php');
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+//use Monolog\Logger;
+//use Monolog\Handler\StreamHandler;
 
 abstract class API {
     protected $method = '';
@@ -19,14 +19,22 @@ abstract class API {
 
     protected $logHandler = Null;
 
-    public function __construct($request) {
+		public $hieaderinfo = Null;
+
+    public function __construct($method, $request) {
         // Logging
-        $this->logHandler = new StreamHandler('php://stdout', Logger::INFO);
+        //$this->logHandler = new StreamHandler('php://stdout', Logger::INFO);
 
         // CORS
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: *');
-        header('Content-Type: application/json');
+        //header('Access-Control-Allow-Origin: *');
+        //header('Access-Control-Allow-Methods: *');
+        //header('Content-Type: application/json');
+
+				$this->headerinfo = Array(
+					'Access-Control-Allow-Origin' => '*',
+					'Access-Control-Allow-Methods' => '*',
+					'Content-Type' => 'application/json'
+				);
 
         $this->args = explode('/', rtrim($request, '/'));
         $this->endpoint = array_shift($this->args);
@@ -35,7 +43,8 @@ abstract class API {
             $this->verb = array_shift($this->args);
         }
 
-        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->method =strtoupper($method);
+        /*
         if($this->method == 'POST' && array_key_exists('HTTP_X_METHOD', $_SERVER)) {
             if($_SERVER['HTTP_X_HTTP_METHOD'] == 'DELETE') {
                 $this->method = 'DELETE';
@@ -45,7 +54,7 @@ abstract class API {
                 throw new Exception('Unexpected header');
             }
         }
-
+        
         switch($this->method) {
         case 'DELETE':
         case 'POST':
@@ -58,6 +67,11 @@ abstract class API {
             $this->request = $this->_cleanInputs($_GET);
             $this->file = file_get_contents('php://input');
             break;
+        }
+        */
+        $this->request = $this->_cleanInputs($request);
+        if($this->method == 'PUT'){
+            $this->file = file_get_contents('php://input');
         }
     }
 
@@ -74,7 +88,7 @@ abstract class API {
     }
 
     private function _response($data, $status = 200) {
-        header('HTTP/1.1 ' . $status . ' ' . $this->_requestStatus($status));
+        //header('HTTP/1.1 ' . $status . ' ' . $this->_requestStatus($status));
         return json_encode($data);
     }
 
@@ -103,4 +117,4 @@ abstract class API {
         return (array_key_exists("$code", $status) ? $status["$code"] : $status['500']);
     }
 }
-?>
+?>   

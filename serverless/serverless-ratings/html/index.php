@@ -1,18 +1,21 @@
 <?php
 require_once 'API.class.php';
 
-use Monolog\Logger;
+//use Monolog\Logger;
 
 class RatingsAPI extends API {
-    public function __construct($request, $origin) {
-        parent::__construct($request);
+    public function __construct($method, $request, $origin) {
+        parent::__construct($method, $request);
+				//echo $this->method.'\n';                                                                              
+				//echo $this->verb.'\n';
+				//var_dump($this->args);
         // Logging
-        $this->logger = new Logger('RatingsAPI');
-        $this->logger->pushHandler($this->logHandler);
+        //$this->logger = new Logger('RatingsAPI');
+        //$this->logger->pushHandler($this->logHandler);
     }
 
     protected function health() {
-        $this->logger->info('health OK');
+        //$this->logger->info('health OK');
         return 'OK';
     }
 
@@ -35,13 +38,16 @@ class RatingsAPI extends API {
             $data = $this->_getRating($sku);
             return $data;
         } else {
-            $this->logger->warn('fetch rating - bad request');
+            //$this->logger->warn('fetch rating - bad request');
             throw new Exception('Bad request', 400);
         }
     }
 
     // ratings/rate/sku/score
     protected function rate() {
+				//echo $this->method;
+				//echo $this->verb;
+				//var_dump($this->args);
         if($this->method == 'PUT' && isset($this->verb) && count($this->args) == 1) {
             $sku = $this->verb;
             $score = intval($this->args[0]);
@@ -61,7 +67,7 @@ class RatingsAPI extends API {
                 $this->_updateRating($sku, $newAvg, $rating['rating_count'] + 1);
             }
         } else {
-            $this->logger->warn('set rating - bad request');
+            //$this->logger->warn('set rating - bad request');
             throw new Exception('Bad request', 400);
         }
 
@@ -83,11 +89,11 @@ class RatingsAPI extends API {
                     return array('avg_rating' => 0, 'rating_count' => 0);
                 }
             } else {
-                $this->logger->error('failed to query data');
+                //$this->logger->error('failed to query data');
                 throw new Exception('Failed to query data', 500);
             }
         } else {
-            $this->logger->error('database connection error');
+            //$this->logger->error('database connection error');
             throw new Exception('Database connection error', 500);
         }
     }
@@ -97,11 +103,11 @@ class RatingsAPI extends API {
         if($db) {
             $stmt = $db->prepare('update ratings set avg_rating = ?, rating_count = ? where sku = ?');
             if(! $stmt->execute(array($score, $count, $sku))) {
-                $this->logger->error('failed to update rating');
+                //$this->logger->error('failed to update rating');
                 throw new Exception('Failed to update data', 500);
             }
         } else {
-            $this->logger->error('database connection error');
+            //$this->logger->error('database connection error');
             throw new Exception('Database connection error', 500);
         }
     }
@@ -111,17 +117,17 @@ class RatingsAPI extends API {
         if($db) {
             $stmt = $db->prepare('insert into ratings(sku, avg_rating, rating_count) values(?, ?, ?)');
             if(! $stmt->execute(array($sku, $score, 1))) {
-                $this->logger->error('failed to insert data');
+								//$this->logger->error('failed to insert data');
                 throw new Exception('Failed to insert data', 500);
             }
         } else {
-            $this->logger->error('database connection error');
+            //$this->logger->error('database connection error');
             throw new Exception('Database connection error', 500);
         }
     }
 
     private function _dbConnect() {
-        $dsn = getenv('PDO_URL') ? getenv('PDO_URL') : 'mysql:host=mysql;dbname=ratings;charset=utf8mb4';
+        $dsn = getenv('PDO_URL') ? getenv('PDO_URL') : 'mysql:host=172.18.0.1:3306;dbname=ratings;charset=utf8mb4';
         $opt = array(
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -133,7 +139,7 @@ class RatingsAPI extends API {
             $db = new PDO($dsn, 'ratings', 'iloveit', $opt);
         } catch (PDOException $e) {
             $msg = $e->getMessage();
-            $this->logger->error("Database error $msg");
+            //$this->logger->error("Database error $msg");
             $db = false;
         }
 
@@ -142,38 +148,40 @@ class RatingsAPI extends API {
 
     // check sku exists in product catalogue
     private function _checkSku($sku) {
-        $url = getenv('CATALOGUE_URL') ? getenv('CATALOGUE_URL') : 'http://catalogue:8080/';
+        $url = getenv('CATALOGUE_URL') ? getenv('CATALOGUE_URL') : 'https://172.17.0.1/api/v1/web/guest/robotshop/catalogue/';
         $url = $url . 'product/' . $sku;
-
         $opt = array(
             CURLOPT_RETURNTRANSFER => true,
+						CURLOPT_SSL_VERIFYPEER => 0,
+						CURLOPT_SSL_VERIFYHOST => 0,
         );
         $curl = curl_init($url);
         curl_setopt_array($curl, $opt);
 
         $data = curl_exec($curl);
         if(! $data) {
-            $this->logger->error('failed to connect to catalogue');
+            //$this->logger->error('failed to connect to catalogue');
             throw new Exception('Failed to connect to catalogue', 500);
         }
         $status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        $this->logger->info("catalogue status $status");
+        //$this->logger->info("catalogue status $status");
 
         curl_close($curl);
 
         return $status == 200;
 
     }
-}
+}                                                
 
-if(!array_key_exists('HTTP_ORIGIN', $_SERVER)) {
-    $_SERVER['HTTP_ORIGIN'] = $_SERVER['SERVER_NAME'];
-}
-
-try {
-    $API = new RatingsAPI($_REQUEST['request'], $_SERVER['HTTP_ORIGIN']);
-    echo $API->processAPI();
-} catch(Exception $e) {
-    echo json_encode(Array('error' => $e->getMessage()));
+function main(array $request)         
+{		
+ try {
+				$API = new RatingsAPI($request["__ow_method"], ltrim($request["__ow_path"], 'api/'), $_SERVER['HTTP_ORIGIN']);
+        //echo $API->processAPI();
+				return Array('headers' => $API->headerinfo, 'body' => $API->processAPI());
+    } catch(Exception $e) {
+        echo json_encode(Array('error' => $e->getMessage()));
+    }
+	
 }
 ?>
